@@ -23,6 +23,7 @@ ifndef classpath2
 export classpath2 = $(PWD)/logreadP
 endif
 
+
 default: 
 	cd logappendP; make
 	cd logreadP; make
