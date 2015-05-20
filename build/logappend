@@ -1,3 +1,4 @@
 #!/bin/bash
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-java -cp . logappendP/Logappend $@
+java -cp $DIR logappendP/Logappend $@
