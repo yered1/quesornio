@@ -28,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -329,7 +330,71 @@ public class LogEntryR {
             System.exit(255);
         }
     }
-    
+
+    public void printT() throws Exception {
+        File f = new File(this.logPath);
+        if (!f.exists() || f.isDirectory()) {
+            System.out.print("invalid\n");
+            System.exit(255);
+        } else {
+            if (!authenticate()) {
+                System.out.print("integrity violation");
+                System.exit(255);
+            }
+        }
+
+        LinkedList<LogEntryR> logList = getLogList();
+        boolean gotEnterTime = false;
+        //boolean hasExitedGallery = false;
+        long enterTime = -1;
+        long exitTime = -1;
+        long lastEntryTimestamp = -1;
+        if (isEprovided() && getEmployeeName() != null) {
+
+            for (int i = 0; i < logList.size(); i++) {
+                if (!gotEnterTime && logList.get(i).getEmployeeName() != null
+                        && logList.get(i).getEmployeeName().equals(getEmployeeName())) {
+                    enterTime = logList.get(i).getTimestamp();
+                    gotEnterTime = true;
+                } else if (gotEnterTime && logList.get(i).getEmployeeName() != null
+                        && logList.get(i).getEmployeeName().equals(getEmployeeName())
+                        && logList.get(i).getRoomID() == -2) {
+                    exitTime = logList.get(i).getTimestamp();
+                }
+                lastEntryTimestamp = logList.get(i).getTimestamp();
+
+            }
+
+        } else if (isGprovided() && getGuestName() != null) {
+
+            for (int i = 0; i < logList.size(); i++) {
+                if (!gotEnterTime && logList.get(i).getGuestName() != null &&
+                        logList.get(i).getGuestName().equals(getGuestName())) {
+                    enterTime = logList.get(i).getTimestamp();
+                    gotEnterTime = true;
+                } else if (gotEnterTime && logList.get(i).getGuestName() != null
+                        && logList.get(i).getGuestName().equals(getGuestName())
+                        && logList.get(i).getRoomID() == -2) {
+                    exitTime = logList.get(i).getTimestamp();
+                }
+                lastEntryTimestamp = logList.get(i).getTimestamp();
+
+            }
+
+        }
+
+        if (enterTime != -1) {
+            if (exitTime == -1) {
+                System.out.print(lastEntryTimestamp - enterTime);
+                System.out.print("\n");
+            } else {
+                System.out.print(exitTime - enterTime);
+                System.out.print("\n");
+            }
+        }
+
+    }
+
     public void printR() throws Exception{
         File f = new File(this.logPath);
         if (!f.exists() || f.isDirectory()) {
@@ -487,6 +552,8 @@ public class LogEntryR {
         System.out.print(employeeNames);
         System.out.print(guestNames);
         LinkedList<String> roomLineList = new LinkedList<>();
+        //LinkedList<Room> orderedRooms = new LinkedList<>();
+        Collections.sort(rooms);
         for (int i =0; i <rooms.size(); i++){
             LinkedList<String> tmpNames = rooms.get(i).getNames();
             String roomLine = "" + rooms.get(i).getRoomID() + ":";
@@ -500,7 +567,7 @@ public class LogEntryR {
             
             roomLineList.add(roomLine);
         }
-        Collections.sort(roomLineList);
+        //Collections.sort(roomLineList);
         for (int i =0; i<roomLineList.size();i++) {
             System.out.print(roomLineList.get(i));
             if (i < rooms.size()-1)
@@ -824,7 +891,7 @@ public class LogEntryR {
         this.b64Hash = b64Hash;
     }
     
-    class Room{
+    class Room implements Comparable<Room>{
         private long roomID;
         private LinkedList<String> names = new LinkedList<>();
 
@@ -858,6 +925,11 @@ public class LogEntryR {
         
         public void addName(String name){
             this.names.add(name);
+        }
+
+        @Override
+        public int compareTo(Room o) {
+            return (int)(this.roomID - o.getRoomID());
         }
     }
 

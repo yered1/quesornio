@@ -64,7 +64,7 @@ public class CryptoMotor {
 
     private String password;
     private byte[] saltBytes;
-    private static int pswdIterations = 1000;
+    private static int pswdIterations = 1;
     private static int keySize = 128;
     private byte[] ivBytes;
     

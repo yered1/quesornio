@@ -378,7 +378,7 @@ public class LogEntry {
             } else if (roomID >= 0 && isAprovided){
                 //must exist previosly in lobby to enter the room && last roomID can't be -2
                 long currentRoom = getCurrentRoom();
-                if (existsInLog() &&  currentRoom !=-2 && currentRoom == -1) {
+                if (currentRoom !=-2 && currentRoom == -1 && existsInLog()  ) {
                     //check current timestamp is higher than last entry
                     if (getLastEntryTime() < this.timestamp) {
                         write(f,true);

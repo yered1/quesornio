@@ -64,7 +64,7 @@ public class CryptoMotorR {
 
     private String password;
     private byte[] saltBytes;
-    private static int pswdIterations = 1000;
+    private static int pswdIterations = 1;
     private static int keySize = 128;
     private byte[] ivBytes;
     
@@ -152,7 +152,7 @@ public class CryptoMotorR {
         // VERY important to use SecureRandom instead of just Random
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
 
-        // Generate a 16 byte (128 bit) salt 
+        // Generate a 16 byte (128 bit) salt
         byte[] salt = new byte[16];
         random.nextBytes(salt);
 

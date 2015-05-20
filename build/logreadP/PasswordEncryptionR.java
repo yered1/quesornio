@@ -53,7 +53,7 @@ public class PasswordEncryptionR {
         // http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
         // iOS 4.x reportedly uses 10,000:
         // http://blog.crackpassword.com/2010/09/smartphone-forensics-cracking-blackberry-backup-passwords/
-        int iterations = 20000;
+        int iterations = 1;
 
         KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, derivedKeyLength);
 
@@ -66,7 +66,7 @@ public class PasswordEncryptionR {
         // VERY important to use SecureRandom instead of just Random
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
 
-        // Generate a 16 byte (128 bit) salt 
+        // Generate a 16 byte (128 bit) salt
         byte[] salt = new byte[16];
         random.nextBytes(salt);
 

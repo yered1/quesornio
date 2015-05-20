@@ -43,6 +43,7 @@ public class Logread {
         char flag;
         boolean printState = false;
         boolean gotR = false;
+        boolean gotT = false;
         
         LogEntryR entry = new LogEntryR();
         try {
@@ -80,8 +81,9 @@ public class Logread {
 
                             //entry.setIsAprovided(true);
                             //gotArgs = true;
-                            System.out.print("unimplemented");
-                            System.exit(0);
+                            //System.out.print("unimplemented");
+                            //System.exit(0);
+                            gotT = true;
 
                             break;
                         case 'I':
@@ -143,7 +145,16 @@ public class Logread {
                 System.out.print("invalid\n");
                 System.exit(255);
             }
+        }else if (gotT && (entry.getEmployeeName() != null || entry.getGuestName() != null)){
+            try{
+                entry.setLogPath(args[args.length - 1]);
+                entry.printT();
+            }catch (Exception x){
+                System.out.print("invalid\n");
+                System.exit(255);
+            }
         }
+        
         
     }
 
