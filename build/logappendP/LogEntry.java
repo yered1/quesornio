@@ -22,6 +22,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -357,15 +359,15 @@ public class LogEntry {
 
         if (f.exists() && !f.isDirectory()) {
             //getLogList will fail if incorrect password, removing for speed
-            /*if (!authenticate()){
+            if (!authenticate()){
                 System.out.print("invalid\n");
                 System.exit(255);
-            }*/
+            }
             //the first time is entering
             if (roomID == -1 && isAprovided){
-                LinkedList<LogEntry> logList = getLogList();
-                boolean existsInLog = existsInLog(logList);
-                long lastEntryTime = getLastEntryTime(logList);
+                //LinkedList<LogEntry> logList = getLogList();
+                boolean existsInLog = existsInLog();
+                long lastEntryTime = getLastEntryTime();
                 if ((!existsInLog && lastEntryTime < this.getTimestamp())|| 
                         (existsInLog && lastEntryTime < this.getTimestamp() && getCurrentRoom() == -2)) {
                     write(f, true);
@@ -376,13 +378,17 @@ public class LogEntry {
                 //entering to a room after being in lobby
             } else if (roomID >= 0 && isAprovided){
                 //must exist previosly in lobby to enter the room && last roomID can't be -2
-                LinkedList<LogEntry> logList = getLogList();
-                long currentRoom = getCurrentRoom(logList);
+                //LinkedList<LogEntry> logList = getLogList();
                 
-                if (currentRoom !=-2 && currentRoom == -1 && existsInLog(logList)  ) {
+                long currentRoom = getCurrentRoom();
+                
+                if (currentRoom !=-2 && currentRoom == -1 && existsInLog()  ) {
+                   
                     //check current timestamp is higher than last entry
-                    if (getLastEntryTime(logList) < this.timestamp) {
+                    if (getLastEntryTime() < this.timestamp) {
+                  
                         write(f,true);
+                   
                     } else {
                         System.out.print("invalid\n");
                         System.exit(255);
@@ -394,10 +400,10 @@ public class LogEntry {
                 }
                 //leaving a room or gallery
             }else if (isLprovided){
-                LinkedList<LogEntry> logList = getLogList();
-                long currRoom = getCurrentRoom(logList);
+                //LinkedList<LogEntry> logList = getLogList();
+                long currRoom = getCurrentRoom();
                 
-                if ( currRoom == getRoomID() && getLastEntryTime(logList) < this.timestamp){//at this point getRoomID should only be >= -1
+                if ( currRoom == getRoomID() && getLastEntryTime() < this.timestamp){//at this point getRoomID should only be >= -1
                     if (currRoom >= 0)
                         this.roomID = -1;//set the roomID to lobby
                     else if (currRoom < 0)
@@ -458,17 +464,20 @@ public class LogEntry {
     }
     
     private long getCurrentRoom() throws Exception{
-        BufferedReader br = new BufferedReader(new FileReader(logPath));
-        
-        String line =  br.readLine();//first line is crypto
+        //BufferedReader br = new BufferedReader(new InputStreamReader(new ReverseLineInputStream(new File(logPath))));
+        RandomAccessFile raf = new RandomAccessFile(new File(logPath),"r");
+        CrunchifyReverseLineReaderCore br = new CrunchifyReverseLineReaderCore(raf, "UTF-8");
+        String line =  "";//br.readLine();//first line is crypto
         //String lastLine;
         LogEntry currLog = null;
         LogEntry lastValidEntry = null;
-
+        String tmpLine = br.readLine();
+        line = tmpLine;
         while (line != null) {
             //lastLine = line;
-            line = br.readLine();//start at second line
-            if (line ==null)
+            line = tmpLine;//start at second line
+            tmpLine = br.readLine();
+            if (tmpLine ==null)
                 break;
             String contentString = line.substring(48);
             String saltString = line.substring(0, 24);
@@ -484,6 +493,7 @@ public class LogEntry {
             if ((currLog.getEmployeeName() != null && this.isEprovided && currLog.getEmployeeName().equals(getEmployeeName())) || 
                     (currLog.getGuestName() != null && this.isGprovided && currLog.getGuestName().equals(getGuestName()))){
                 lastValidEntry = currLog;
+                break;
             }
             
         }
@@ -491,6 +501,7 @@ public class LogEntry {
             System.out.print("invalid\n");
             System.exit(255);
         }
+        raf.close();
         return lastValidEntry.getRoomID();
     }
     private long getLastEntryTime(LinkedList<LogEntry> logList) throws Exception {
@@ -527,17 +538,22 @@ public class LogEntry {
     }
     
     private long getLastEntryTime() throws Exception {
-        BufferedReader br = new BufferedReader(new FileReader(logPath));
-        
-        String line =  br.readLine();//first line is crypto
+        //BufferedReader br = new BufferedReader(new InputStreamReader(new ReverseLineInputStream(new File(logPath))));
+        RandomAccessFile raf = new RandomAccessFile(new File(logPath),"r");
+        CrunchifyReverseLineReaderCore br = new CrunchifyReverseLineReaderCore(raf, "UTF-8");
+        String line = "";// br.readLine();//first line is crypto
         //String lastLine;
         LogEntry currLog = null;
 
-        while (line != null) {
+        //while (line != null) {
             //lastLine = line;
             line = br.readLine();//start at second line
-            if (line ==null)
-                break;
+            String tmpLine = br.readLine();
+            if (tmpLine == null){
+                return -1;
+            }
+            //if (line ==null)
+            //    break;
             String contentString = line.substring(48);
             String saltString = line.substring(0, 24);
             String ivString = line.substring(24, 48);
@@ -548,9 +564,10 @@ public class LogEntry {
             if (!currLog.isHashOK()) {
                 System.out.print("invalid\n");
                 System.exit(255);
-            }
+        //    }
             
         }
+            raf.close();
         return currLog.getTimestamp();
 
     }
@@ -660,16 +677,27 @@ public class LogEntry {
     }
    
     private boolean existsInLog() throws FileNotFoundException, IOException, Exception {
-        BufferedReader br = new BufferedReader(new FileReader(logPath));
-        br.readLine();
+        //BufferedReader br = new BufferedReader(new InputStreamReader(new ReverseLineInputStream(new File(logPath))));
+        //br.readLine();
+        RandomAccessFile raf = new RandomAccessFile(new File(logPath),"r");
+        CrunchifyReverseLineReaderCore br = new CrunchifyReverseLineReaderCore(raf, "UTF-8");
+        
         if (getGuestName() != null) {
-            for (String line; (line = br.readLine()) != null;) {
+            
+            String tmpLine = br.readLine();
+            
+            for (String line; (line = tmpLine) != null;) {
+                
+                tmpLine = br.readLine();
+                if (tmpLine == null)
+                    break;
                 String contentString = line.substring(48);
                 String saltString = line.substring(0, 24);
                 String ivString = line.substring(24,48);
                 byte[] saltByte = Base64.getDecoder().decode(saltString);
                 byte[] ivByte = Base64.getDecoder().decode(ivString);
                 CryptoMotor crypto = new CryptoMotor(saltByte,token,ivByte);
+                
                 LogEntry currLog = new LogEntry(crypto.decrypt(contentString));
                 if (!currLog.isHashOK()) {
                     System.out.print("invalid\n");
@@ -681,7 +709,11 @@ public class LogEntry {
                 }
             }
         } else if (getEmployeeName() != null) {
-            for (String line; (line = br.readLine()) != null;) {
+            String tmpLine = br.readLine();
+            for (String line; (line = tmpLine) != null;) {
+                tmpLine = br.readLine();
+                if (tmpLine == null)
+                    break;
                 String contentString = line.substring(48);
                 String saltString = line.substring(0, 24);
                 String ivString = line.substring(24,48);
@@ -700,6 +732,7 @@ public class LogEntry {
             }
 
         }
+        raf.close();
         return false;
     }
     
