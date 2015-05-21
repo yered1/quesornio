@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,8 +45,11 @@ public class Logread {
         boolean printState = false;
         boolean gotR = false;
         boolean gotT = false;
+        boolean gotI = false;
         
         LogEntryR entry = new LogEntryR();
+        LinkedList<LogEntryR.Person> employees = new LinkedList<>();
+        LinkedList<LogEntryR.Person> guests = new LinkedList<>();
         try {
             while (i < args.length) {
                 if (args[i].startsWith("-")) {
@@ -62,18 +66,32 @@ public class Logread {
                         case 'K':
 
                             entry.setToken(arg);
+                            
                             //gotArgs = true;
 
                             break;
                         case 'E':
 
-                            entry.setEmployeeName(arg);
+                            
+                            if (gotI){
+                                LogEntryR.Person p = new LogEntryR().new Person();
+                                p.setName(arg);
+                                employees.add(p);
+                                
+                            }else{
+                                entry.setEmployeeName(arg);
+                            }
                             //gotArgs = true;
 
                             break;
                         case 'G':
-
-                            entry.setGuestName(arg);
+                            if (gotI){
+                                LogEntryR.Person p = new LogEntryR().new Person();
+                                p.setName(arg);
+                                guests.add(p);
+                            }else{
+                                entry.setGuestName(arg);
+                            }
                             //gotArgs = true;
 
                             break;
@@ -90,8 +108,9 @@ public class Logread {
 
                             //entry.setIsLprovided(true);
                             //gotArgs = true;
-                            System.out.print("unimplemented");
-                            System.exit(0);
+                            //System.out.print("unimplemented");
+                            //System.exit(0);
+                            gotI = true;
 
                             break;
                         case 'R':
@@ -149,6 +168,14 @@ public class Logread {
             try{
                 entry.setLogPath(args[args.length - 1]);
                 entry.printT();
+            }catch (Exception x){
+                System.out.print("invalid\n");
+                System.exit(255);
+            }
+        }else if (gotI){
+            try{
+                entry.setLogPath(args[args.length - 1]);
+                entry.printI(employees, guests);
             }catch (Exception x){
                 System.out.print("invalid\n");
                 System.exit(255);

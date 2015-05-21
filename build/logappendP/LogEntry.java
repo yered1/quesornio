@@ -19,18 +19,15 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.LinkedList;
-import java.util.Scanner;
 
 /**
  *
@@ -359,14 +356,16 @@ public class LogEntry {
         }
 
         if (f.exists() && !f.isDirectory()) {
-            if (!authenticate()){
+            //getLogList will fail if incorrect password, removing for speed
+            /*if (!authenticate()){
                 System.out.print("invalid\n");
                 System.exit(255);
-            }
+            }*/
             //the first time is entering
             if (roomID == -1 && isAprovided){
-                boolean existsInLog = existsInLog();
-                long lastEntryTime = getLastEntryTime();
+                LinkedList<LogEntry> logList = getLogList();
+                boolean existsInLog = existsInLog(logList);
+                long lastEntryTime = getLastEntryTime(logList);
                 if ((!existsInLog && lastEntryTime < this.getTimestamp())|| 
                         (existsInLog && lastEntryTime < this.getTimestamp() && getCurrentRoom() == -2)) {
                     write(f, true);
@@ -377,10 +376,12 @@ public class LogEntry {
                 //entering to a room after being in lobby
             } else if (roomID >= 0 && isAprovided){
                 //must exist previosly in lobby to enter the room && last roomID can't be -2
-                long currentRoom = getCurrentRoom();
-                if (currentRoom !=-2 && currentRoom == -1 && existsInLog()  ) {
+                LinkedList<LogEntry> logList = getLogList();
+                long currentRoom = getCurrentRoom(logList);
+                
+                if (currentRoom !=-2 && currentRoom == -1 && existsInLog(logList)  ) {
                     //check current timestamp is higher than last entry
-                    if (getLastEntryTime() < this.timestamp) {
+                    if (getLastEntryTime(logList) < this.timestamp) {
                         write(f,true);
                     } else {
                         System.out.print("invalid\n");
@@ -393,8 +394,10 @@ public class LogEntry {
                 }
                 //leaving a room or gallery
             }else if (isLprovided){
-                long currRoom = getCurrentRoom();
-                if ( currRoom == getRoomID() && getLastEntryTime() < this.timestamp){//at this point getRoomID should only be >= -1
+                LinkedList<LogEntry> logList = getLogList();
+                long currRoom = getCurrentRoom(logList);
+                
+                if ( currRoom == getRoomID() && getLastEntryTime(logList) < this.timestamp){//at this point getRoomID should only be >= -1
                     if (currRoom >= 0)
                         this.roomID = -1;//set the roomID to lobby
                     else if (currRoom < 0)
@@ -410,7 +413,49 @@ public class LogEntry {
         }
 
     }
-    
+    private long getCurrentRoom(LinkedList<LogEntry> logList) throws Exception{
+        /*BufferedReader br = new BufferedReader(new FileReader(logPath));
+        
+        String line =  br.readLine();//first line is crypto
+        //String lastLine;
+        LogEntry currLog = null;
+        LogEntry lastValidEntry = null;
+
+        while (line != null) {
+            //lastLine = line;
+            line = br.readLine();//start at second line
+            if (line ==null)
+                break;
+            String contentString = line.substring(48);
+            String saltString = line.substring(0, 24);
+            String ivString = line.substring(24, 48);
+            byte[] saltByte = Base64.getDecoder().decode(saltString);
+            byte[] ivByte = Base64.getDecoder().decode(ivString);
+            CryptoMotor crypto = new CryptoMotor(saltByte, token, ivByte);
+            currLog = new LogEntry(crypto.decrypt(contentString));
+            if (!currLog.isHashOK()) {
+                System.out.print("invalid\n");
+                System.exit(255);
+            }
+            if ((currLog.getEmployeeName() != null && this.isEprovided && currLog.getEmployeeName().equals(getEmployeeName())) || 
+                    (currLog.getGuestName() != null && this.isGprovided && currLog.getGuestName().equals(getGuestName()))){
+                lastValidEntry = currLog;
+            }
+            
+        }*/
+        LogEntry lastValidEntry = null;
+        for (int i = 0; i < logList.size(); i++){
+            if ((logList.get(i).getEmployeeName() != null && this.isEprovided && logList.get(i).getEmployeeName().equals(getEmployeeName())) || 
+                    (logList.get(i).getGuestName() != null && this.isGprovided && logList.get(i).getGuestName().equals(getGuestName()))){
+                lastValidEntry = logList.get(i);
+            }
+        }
+        if (lastValidEntry == null) {
+            System.out.print("invalid\n");
+            System.exit(255);
+        }
+        return lastValidEntry.getRoomID();
+    }
     
     private long getCurrentRoom() throws Exception{
         BufferedReader br = new BufferedReader(new FileReader(logPath));
@@ -447,6 +492,38 @@ public class LogEntry {
             System.exit(255);
         }
         return lastValidEntry.getRoomID();
+    }
+    private long getLastEntryTime(LinkedList<LogEntry> logList) throws Exception {
+        //BufferedReader br = new BufferedReader(new FileReader(logPath));
+        
+        //String line =  br.readLine();//first line is crypto
+        //String lastLine;
+        /*LogEntry currLog = null;
+        
+        for (int i = 0; i< logList.size(); i++){
+            
+        }
+
+        while (line != null) {
+            //lastLine = line;
+            line = br.readLine();//start at second line
+            if (line ==null)
+                break;
+            String contentString = line.substring(48);
+            String saltString = line.substring(0, 24);
+            String ivString = line.substring(24, 48);
+            byte[] saltByte = Base64.getDecoder().decode(saltString);
+            byte[] ivByte = Base64.getDecoder().decode(ivString);
+            CryptoMotor crypto = new CryptoMotor(saltByte, token, ivByte);
+            currLog = new LogEntry(crypto.decrypt(contentString));
+            if (!currLog.isHashOK()) {
+                System.out.print("invalid\n");
+                System.exit(255);
+            }
+            
+        }*/
+        //return currLog.getTimestamp();
+        return logList.get(logList.size()-1).getTimestamp();
     }
     
     private long getLastEntryTime() throws Exception {
@@ -504,6 +581,82 @@ public class LogEntry {
         byte[] saltByte = Base64.getDecoder().decode(saltString);
         return PasswordEncryption.authenticate(token, passByte, saltByte);
         //return false;
+    }
+    private LinkedList<LogEntry> getLogList() throws Exception{
+        BufferedReader br = new BufferedReader(new FileReader(logPath));
+        
+        String line =  br.readLine();//first line is crypto
+        //String lastLine;
+        LogEntry currLog = null;
+        //LogEntry lastValidEntry = null;
+        LinkedList<LogEntry> logList = new LinkedList<>();
+       
+
+        while (line != null) {
+            //lastLine = line;
+            line = br.readLine();//start at second line
+            if (line ==null)
+                break;
+            String contentString = line.substring(48);
+            String saltString = line.substring(0, 24);
+            String ivString = line.substring(24, 48);
+            byte[] saltByte = Base64.getDecoder().decode(saltString);
+            byte[] ivByte = Base64.getDecoder().decode(ivString);
+            CryptoMotor crypto = new CryptoMotor(saltByte, token, ivByte);
+            currLog = new LogEntry(crypto.decrypt(contentString));
+            if (!currLog.isHashOK()) {
+                System.out.print("invalid\n");
+                System.exit(255);
+            }
+            logList.add(currLog);
+            
+        }
+        br.close();
+        
+        return logList;
+    }
+    private boolean existsInLog(LinkedList<LogEntry> logList) throws FileNotFoundException, IOException, Exception {
+        //BufferedReader br = new BufferedReader(new FileReader(logPath));
+        //br.readLine();
+        if (getGuestName() != null) {
+            for (int i =0; i < logList.size(); i++) {
+               /* String contentString = line.substring(48);
+                String saltString = line.substring(0, 24);
+                String ivString = line.substring(24,48);
+                byte[] saltByte = Base64.getDecoder().decode(saltString);
+                byte[] ivByte = Base64.getDecoder().decode(ivString);
+                CryptoMotor crypto = new CryptoMotor(saltByte,token,ivByte);
+                LogEntry currLog = new LogEntry(crypto.decrypt(contentString));
+                if (!currLog.isHashOK()) {
+                    System.out.print("invalid\n");
+                    System.exit(255);
+                }*/
+                if (logList.get(i).getGuestName() != null && 
+                        logList.get(i).getGuestName().equals(this.getGuestName())){
+                    return true;
+                }
+            }
+        } else if (getEmployeeName() != null) {
+            for (int i = 0; i < logList.size(); i++) {
+                /*String contentString = line.substring(48);
+                String saltString = line.substring(0, 24);
+                String ivString = line.substring(24,48);
+                byte[] saltByte = Base64.getDecoder().decode(saltString);
+                byte[] ivByte = Base64.getDecoder().decode(ivString);
+                CryptoMotor crypto = new CryptoMotor(saltByte, token,ivByte);
+                LogEntry currLog = new LogEntry(crypto.decrypt(contentString));
+                if (!currLog.isHashOK()) {
+                    System.out.print("invalid\n");
+                    System.exit(255);
+                }*/
+                if (logList.get(i).getEmployeeName() != null && 
+                        logList.get(i).getEmployeeName().equals(this.getEmployeeName())){
+                    return true;
+                }
+            }
+
+        }
+        return false;
     }
    
     private boolean existsInLog() throws FileNotFoundException, IOException, Exception {
