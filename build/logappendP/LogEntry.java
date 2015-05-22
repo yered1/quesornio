@@ -596,6 +596,7 @@ public class LogEntry {
         String saltString = line.substring(0, 24);
         byte[] passByte = Base64.getDecoder().decode(passString);
         byte[] saltByte = Base64.getDecoder().decode(saltString);
+        br.close();
         return PasswordEncryption.authenticate(token, passByte, saltByte);
         //return false;
     }

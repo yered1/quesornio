@@ -875,6 +875,7 @@ public class LogEntryR {
             System.out.print("invalid\n");
             System.exit(255);
         }
+        br.close();
         return lastValidEntry.getRoomID();
     }
     
@@ -903,6 +904,7 @@ public class LogEntryR {
             }
             
         }
+        br.close();
         return currLog.getTimestamp();
 
     }
@@ -931,6 +933,7 @@ public class LogEntryR {
         String saltString = line.substring(0, 24);
         byte[] passByte = Base64.getDecoder().decode(passString);
         byte[] saltByte = Base64.getDecoder().decode(saltString);
+        br.close();
         return PasswordEncryptionR.authenticate(token, passByte, saltByte);
         //return false;
     }
@@ -976,6 +979,7 @@ public class LogEntryR {
             }
 
         }
+        br.close();
         return false;
     }
     
@@ -1058,8 +1062,14 @@ public class LogEntryR {
         /**
          * @param name the name to set
          */
-        public void setName(String name) {
-            this.name = name;
+        public void setName(String name_) {
+            if (name_.matches("[a-zA-Z]+")) {
+                this.name = name_;
+            } else {
+                System.out.print("invalid\n");
+                System.exit(255);
+            }
+            
         }
 
         /**
@@ -1111,8 +1121,14 @@ public class LogEntryR {
             this.names = names;
         }
         
-        public void addName(String name){
-            this.names.add(name);
+        public void addName(String name) {
+            if (name.matches("[a-zA-Z]+")) {
+                this.names.add(name);
+            } else {
+                System.out.print("invalid\n");
+                System.exit(255);
+            }
+
         }
 
         @Override
