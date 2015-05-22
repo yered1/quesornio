@@ -6,9 +6,16 @@
 package logappendP;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +26,9 @@ import java.util.logging.Logger;
 public class Logappend {
 
     private static String[] lineArgs;
+    private boolean isBatch = false;
+    //public static LinkedList<LogEntry> fileSim = new LinkedList<>();
+    public static HashMap<String,LinkedList<String>> fileSim = new HashMap();
     
     /**
      * @param args the command line arguments
@@ -121,7 +131,11 @@ public class Logappend {
         if (gotArgs) {
             entry.setLogPath(args[args.length - 1]);
             try {
-                entry.save();
+                if (isBatch){
+                    entry.saveB();
+                }else{
+                    entry.save();
+                }
             } catch (Exception ex) {
                 //Logger.getLogger(Logappend.class.getName()).log(Level.SEVERE, null, ex);
                 System.out.print("invalid\n");
@@ -139,15 +153,39 @@ public class Logappend {
                     Logappend l = new Logappend();
                     
                     Logappend logappend = new Logappend();
+                    logappend.setIsBatch(true);
                     logappend.start(java.util.Arrays.stream(line.split(" "))
                             .filter(s -> (s != null && s.length() > 0)).toArray(String[]::new));
                     line = br.readLine();
                     
                 }
+                br.close();
+                for (Map.Entry<String, LinkedList<String>> e : Logappend.fileSim.entrySet()) {
+                    BufferedWriter bw = new BufferedWriter(new FileWriter(new File(e.getKey()), true));
+                    LinkedList<String> lines = e.getValue();
+                    
+                    byte[] salt = PasswordEncryption.generateSalt();
+                    String encryptedPass = Base64.getEncoder().encodeToString(
+                            PasswordEncryption.getEncryptedPassword(lines.get(0), salt));
+                    String b64Salt = Base64.getEncoder().encodeToString(salt);
+                    bw.write(b64Salt + encryptedPass);
+                    for (int z = 1; z < lines.size(); z++) {
+
+                        bw.newLine();
+                        CryptoMotor crypto = new CryptoMotor(lines.get(0));
+                        String cryptoLine = crypto.encrypt(lines.get(z));
+                        bw.write(crypto.getSaltBytesAsB64() + crypto.getIvBytesAsB64() + cryptoLine);
+                    }
+
+                    bw.flush();
+                    bw.close();
+                }
+                
             } catch (Exception ex) {
                 System.out.print("invalid\n");
                 System.exit(255);
             }
+            
 
         }
     }
@@ -164,6 +202,20 @@ public class Logappend {
      */
     public void setLineArgs(String[] lineArgs) {
         Logappend.lineArgs = lineArgs;
+    }
+
+    /**
+     * @return the isBatch
+     */
+    public boolean isIsBatch() {
+        return isBatch;
+    }
+
+    /**
+     * @param isBatch the isBatch to set
+     */
+    public void setIsBatch(boolean isBatch) {
+        this.isBatch = isBatch;
     }
 
 }

@@ -326,6 +326,114 @@ public class LogEntry {
             System.exit(255);
         }
     }
+    
+    public void saveB() throws Exception {
+        File fi = new File(this.logPath);
+        if (fi.isDirectory()){
+            System.out.print("invalid\n");
+                System.exit(255);
+        }
+        LinkedList<String> f = null;
+        try{
+            f = Logappend.fileSim.get(logPath);
+        }catch (Exception x){
+            
+        }
+        //creating new file
+        if (f == null/*!f.exists() && !f.isDirectory()*/) {
+            if (!isLprovided && isAprovided && isKprovided
+                    && (isEprovided || isGprovided) && roomID == -1) {
+                //FileOutputStream fo = new FileOutputStream(f);
+                //BufferedWriter bw = new BufferedWriter(new FileWriter(f,false));
+                //byte[] salt = PasswordEncryption.generateSalt();
+                //String encryptedPass = Base64.getEncoder().encodeToString(
+                //        PasswordEncryption.getEncryptedPassword(token, salt));
+                //String b64Salt = Base64.getEncoder().encodeToString(salt);
+                //bw.write(b64Salt + encryptedPass);
+                //bw.newLine();
+                LinkedList<String> tmp = new LinkedList<>();
+                tmp.add(token);
+                tmp.add(prepareLine());
+                Logappend.fileSim.put(logPath, tmp);
+                //CryptoMotor crypto = new CryptoMotor(token);   
+                //String cryptoLine = crypto.encrypt(prepareLine());
+                //bw.write(crypto.getSaltBytesAsB64() + crypto.getIvBytesAsB64() + cryptoLine);
+                
+                //bw.flush();
+                //bw.close();
+                return;
+            }else{
+                System.out.print("invalid\n");
+                System.exit(255);
+            }
+            
+        }/*else if (f.isDirectory()){
+            System.out.print("invalid\n");
+                System.exit(255);
+        }*/
+
+        if (f != null) {
+            //getLogList will fail if incorrect password, removing for speed
+            if (!authenticateB()){
+                System.out.print("invalid\n");
+                System.exit(255);
+            }
+            //the first time is entering
+            if (roomID == -1 && isAprovided){
+               LinkedList<LogEntry> logList = getLogListB();
+                boolean existsInLog = existsInLog(logList);
+                long lastEntryTime = getLastEntryTime(logList);
+                if ((!existsInLog && lastEntryTime < this.getTimestamp())|| 
+                        (existsInLog && lastEntryTime < this.getTimestamp() && getCurrentRoom(logList) == -2)) {
+                    writeB();
+                } else {
+                    System.out.print("invalid\n");
+                    System.exit(255);
+                }
+                //entering to a room after being in lobby
+            } else if (roomID >= 0 && isAprovided){
+                //must exist previosly in lobby to enter the room && last roomID can't be -2
+                LinkedList<LogEntry> logList = getLogListB();
+                
+                long currentRoom = getCurrentRoom(logList);
+                
+                if (currentRoom !=-2 && currentRoom == -1 && existsInLog(logList)  ) {
+                   
+                    //check current timestamp is higher than last entry
+                    if (getLastEntryTime(logList) < this.timestamp) {
+                  
+                        writeB();
+                   
+                    } else {
+                        System.out.print("invalid\n");
+                        System.exit(255);
+                    }
+                }else{
+                    //trying to enter a room without leaving the previous
+                    System.out.print("invalid\n");
+                    System.exit(255);
+                }
+                //leaving a room or gallery
+            }else if (isLprovided){
+                LinkedList<LogEntry> logList = getLogListB();
+                long currRoom = getCurrentRoom(logList);
+                
+                if ( currRoom == getRoomID() && getLastEntryTime(logList) < this.timestamp){//at this point getRoomID should only be >= -1
+                    if (currRoom >= 0)
+                        this.roomID = -1;//set the roomID to lobby
+                    else if (currRoom < 0)
+                        this.roomID = -2;// set the roomID to outside gallery
+                    writeB();
+                } else {
+                    System.out.print("invalid\n");
+                    System.exit(255);
+                }
+            }
+
+
+        }
+
+    }
 
     public void save() throws Exception {
         File f = new File(this.logPath);
@@ -450,10 +558,11 @@ public class LogEntry {
             
         }*/
         LogEntry lastValidEntry = null;
-        for (int i = 0; i < logList.size(); i++){
+        for (int i = logList.size()-1; i >=0; i--){
             if ((logList.get(i).getEmployeeName() != null && this.isEprovided && logList.get(i).getEmployeeName().equals(getEmployeeName())) || 
                     (logList.get(i).getGuestName() != null && this.isGprovided && logList.get(i).getGuestName().equals(getGuestName()))){
                 lastValidEntry = logList.get(i);
+                return lastValidEntry.getRoomID();
             }
         }
         if (lastValidEntry == null) {
@@ -571,6 +680,18 @@ public class LogEntry {
         return currLog.getTimestamp();
 
     }
+    private void writeB() throws IOException, NoSuchAlgorithmException, Exception {
+        /*BufferedWriter bw = new BufferedWriter(new FileWriter(f, append));
+        byte[] salt = PasswordEncryption.generateSalt();
+        
+        CryptoMotor crypto = new CryptoMotor(token);
+        bw.newLine();
+        String cryptoLine = crypto.encrypt(prepareLine());
+        bw.write(crypto.getSaltBytesAsB64() + crypto.getIvBytesAsB64() + cryptoLine);        
+        bw.flush();
+        bw.close();*/
+        Logappend.fileSim.get(logPath).add(prepareLine());
+    }
     
     private void write(File f, boolean append) throws IOException, NoSuchAlgorithmException, Exception {
         BufferedWriter bw = new BufferedWriter(new FileWriter(f, append));
@@ -582,6 +703,32 @@ public class LogEntry {
         bw.write(crypto.getSaltBytesAsB64() + crypto.getIvBytesAsB64() + cryptoLine);        
         bw.flush();
         bw.close();
+    }
+    
+    private boolean authenticateB() throws FileNotFoundException, IOException, NoSuchAlgorithmException, InvalidKeySpecException{
+        /*BufferedReader br = new BufferedReader(new FileReader(logPath));
+        String line = br.readLine();
+        br.close();
+        
+        if (line == null){
+            System.out.print("invalid\n");
+            System.exit(255);
+        }
+        String passString = line.substring(24);
+        String saltString = line.substring(0, 24);
+        byte[] passByte = Base64.getDecoder().decode(passString);
+        byte[] saltByte = Base64.getDecoder().decode(saltString);
+        br.close();
+        return PasswordEncryption.authenticate(token, passByte, saltByte);*/
+        //return false;
+        LinkedList<String> f = null;
+        try{
+            f = Logappend.fileSim.get(logPath);
+        }catch (Exception x){
+            
+        }
+        return f != null && f.get(0).equals(token);
+        
     }
     
     private boolean authenticate() throws FileNotFoundException, IOException, NoSuchAlgorithmException, InvalidKeySpecException{
@@ -599,6 +746,50 @@ public class LogEntry {
         br.close();
         return PasswordEncryption.authenticate(token, passByte, saltByte);
         //return false;
+    }
+    private LinkedList<LogEntry> getLogListB() throws Exception{
+        //BufferedReader br = new BufferedReader(new FileReader(logPath));
+        LinkedList<String> br = null;
+        try{
+            br = Logappend.fileSim.get(logPath);
+        }catch (Exception x){
+            
+        }
+        //String line =  br.readLine();//first line is crypto
+        //String lastLine;
+        LogEntry currLog = null;
+        //LogEntry lastValidEntry = null;
+        LinkedList<LogEntry> logList = new LinkedList<>();
+       if (br == null){
+           return logList;
+       }
+       for (int i =1; i<br.size(); i++){
+           currLog = new LogEntry(br.get(i));
+           logList.add(currLog);
+       }
+
+        /*while (line != null) {
+            //lastLine = line;
+            line = br.readLine();//start at second line
+            if (line ==null)
+                break;
+            String contentString = line.substring(48);
+            String saltString = line.substring(0, 24);
+            String ivString = line.substring(24, 48);
+            byte[] saltByte = Base64.getDecoder().decode(saltString);
+            byte[] ivByte = Base64.getDecoder().decode(ivString);
+            CryptoMotor crypto = new CryptoMotor(saltByte, token, ivByte);
+            currLog = new LogEntry(crypto.decrypt(contentString));
+            if (!currLog.isHashOK()) {
+                System.out.print("invalid\n");
+                System.exit(255);
+            }
+            logList.add(currLog);
+            
+        }
+        br.close();
+        */
+        return logList;
     }
     private LinkedList<LogEntry> getLogList() throws Exception{
         BufferedReader br = new BufferedReader(new FileReader(logPath));
@@ -637,7 +828,7 @@ public class LogEntry {
         //BufferedReader br = new BufferedReader(new FileReader(logPath));
         //br.readLine();
         if (getGuestName() != null) {
-            for (int i =0; i < logList.size(); i++) {
+            for (int i =logList.size()-1; i >=0 ; i--) {
                /* String contentString = line.substring(48);
                 String saltString = line.substring(0, 24);
                 String ivString = line.substring(24,48);
@@ -655,7 +846,7 @@ public class LogEntry {
                 }
             }
         } else if (getEmployeeName() != null) {
-            for (int i = 0; i < logList.size(); i++) {
+            for (int i = logList.size()-1; i >= 0; i--) {
                 /*String contentString = line.substring(48);
                 String saltString = line.substring(0, 24);
                 String ivString = line.substring(24,48);
