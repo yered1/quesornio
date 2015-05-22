@@ -152,8 +152,8 @@ public class CryptoMotor {
         // VERY important to use SecureRandom instead of just Random
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
 
-        // Generate a 16 byte (128 bit) salt 
-        byte[] salt = new byte[16];
+        // Generate a 8 byte (64 bit) salt 
+        byte[] salt = new byte[8];
         random.nextBytes(salt);
 
         return salt;

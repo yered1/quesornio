@@ -598,9 +598,9 @@ public class LogEntryR {
             line = br.readLine();//start at second line
             if (line ==null)
                 break;
-            String contentString = line.substring(48);
-            String saltString = line.substring(0, 24);
-            String ivString = line.substring(24, 48);
+            String contentString = line.substring(36);
+            String saltString = line.substring(0, 12);
+            String ivString = line.substring(12, 36);
             byte[] saltByte = Base64.getDecoder().decode(saltString);
             byte[] ivByte = Base64.getDecoder().decode(ivString);
             CryptoMotorR crypto = new CryptoMotorR(saltByte, token, ivByte);
@@ -854,9 +854,9 @@ public class LogEntryR {
             line = br.readLine();//start at second line
             if (line ==null)
                 break;
-            String contentString = line.substring(48);
-            String saltString = line.substring(0, 24);
-            String ivString = line.substring(24, 48);
+            String contentString = line.substring(36);
+            String saltString = line.substring(0, 12);
+            String ivString = line.substring(12, 36);
             byte[] saltByte = Base64.getDecoder().decode(saltString);
             byte[] ivByte = Base64.getDecoder().decode(ivString);
             CryptoMotorR crypto = new CryptoMotorR(saltByte, token, ivByte);
@@ -891,9 +891,9 @@ public class LogEntryR {
             line = br.readLine();//start at second line
             if (line ==null)
                 break;
-            String contentString = line.substring(48);
-            String saltString = line.substring(0, 24);
-            String ivString = line.substring(24, 48);
+            String contentString = line.substring(36);
+            String saltString = line.substring(0, 12);
+            String ivString = line.substring(12, 36);
             byte[] saltByte = Base64.getDecoder().decode(saltString);
             byte[] ivByte = Base64.getDecoder().decode(ivString);
             CryptoMotorR crypto = new CryptoMotorR(saltByte, token, ivByte);
@@ -943,9 +943,9 @@ public class LogEntryR {
         br.readLine();
         if (getGuestName() != null) {
             for (String line; (line = br.readLine()) != null;) {
-                String contentString = line.substring(48);
-                String saltString = line.substring(0, 24);
-                String ivString = line.substring(24,48);
+                String contentString = line.substring(36);
+                String saltString = line.substring(0, 12);
+                String ivString = line.substring(12,36);
                 byte[] saltByte = Base64.getDecoder().decode(saltString);
                 byte[] ivByte = Base64.getDecoder().decode(ivString);
                 CryptoMotorR crypto = new CryptoMotorR(saltByte,token,ivByte);
@@ -961,9 +961,9 @@ public class LogEntryR {
             }
         } else if (getEmployeeName() != null) {
             for (String line; (line = br.readLine()) != null;) {
-                String contentString = line.substring(48);
-                String saltString = line.substring(0, 24);
-                String ivString = line.substring(24,48);
+                String contentString = line.substring(36);
+                String saltString = line.substring(0, 12);
+                String ivString = line.substring(12,36);
                 byte[] saltByte = Base64.getDecoder().decode(saltString);
                 byte[] ivByte = Base64.getDecoder().decode(ivString);
                 CryptoMotorR crypto = new CryptoMotorR(saltByte, token,ivByte);
@@ -984,11 +984,11 @@ public class LogEntryR {
     }
     
     public boolean isHashOK() throws NoSuchAlgorithmException, UnsupportedEncodingException{
-        //String line = "";
+        String line = "";
 
-        //line = line + this.timestamp + "|" + this.employeeName + "|" + this.guestName
-        //        + "|" + this.isAprovided + "|" + this.isLprovided + "|" + this.roomID + "|";
-        MessageDigest hash = null;
+        line = line + this.timestamp + "|" + this.employeeName + "|" + this.guestName
+                + "|" + this.isAprovided + "|" + this.isLprovided + "|" + this.roomID + "|";
+        /*MessageDigest hash = null;
         hash = MessageDigest.getInstance("SHA-1");
         hash.reset();
         hash.update((this.timestamp + this.employeeName + this.guestName
@@ -996,7 +996,9 @@ public class LogEntryR {
 
         String B64 = Base64.getEncoder().encodeToString(hash.digest());
         
-        return B64.equals(getB64Hash());
+        return B64.equals(getB64Hash());*/
+        
+        return (Integer.toString(line.hashCode())).equals(getB64Hash());
     }
 
     //INCOMPLTE
@@ -1016,7 +1018,7 @@ public class LogEntryR {
 
         line = line + this.timestamp + "|" + this.employeeName + "|" + this.guestName
                 + "|" + this.isAprovided + "|" + this.isLprovided + "|" + this.roomID + "|";
-        MessageDigest hash = null;
+        /*MessageDigest hash = null;
         hash = MessageDigest.getInstance("SHA-1");
         hash.reset();
         hash.update((this.timestamp + this.employeeName + this.guestName
@@ -1024,7 +1026,8 @@ public class LogEntryR {
 
         String B64 = Base64.getEncoder().encodeToString(hash.digest());
 
-        line = line + B64;
+        line = line + B64;*/
+        line = line + line.hashCode();
 
         return line;
 
