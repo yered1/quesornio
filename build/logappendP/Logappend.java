@@ -165,15 +165,17 @@ public class Logappend {
                     LinkedList<String> lines = e.getValue();
                     
                     byte[] salt = PasswordEncryption.generateSalt();
-                    String encryptedPass = Base64.getEncoder().encodeToString(
-                            PasswordEncryption.getEncryptedPassword(lines.get(0), salt));
-                    String b64Salt = Base64.getEncoder().encodeToString(salt);
+                    String encryptedPass = new String (Base91.encode(
+                            PasswordEncryption.getEncryptedPassword(lines.get(0), salt)));
+                    String b64Salt = new String(Base91.encode(salt));
                     bw.write(b64Salt + encryptedPass);
                     for (int z = 1; z < lines.size(); z++) {
 
                         bw.newLine();
                         CryptoMotor crypto = new CryptoMotor(lines.get(0));
                         String cryptoLine = crypto.encrypt(lines.get(z));
+                        String tmp = crypto.getIvBytesAsB64();
+                        tmp = crypto.getSaltBytesAsB64();
                         bw.write(crypto.getSaltBytesAsB64() + crypto.getIvBytesAsB64() + cryptoLine);
                     }
 

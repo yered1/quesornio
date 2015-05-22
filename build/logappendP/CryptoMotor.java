@@ -17,9 +17,8 @@ package logappendP;
 import java.security.AlgorithmParameters;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -52,7 +51,8 @@ public class CryptoMotor {
     }
     
     public  String getSaltBytesAsB64() {
-        return Base64.getEncoder().encodeToString(saltBytes);
+        return new String(Base91.encode(saltBytes));
+        //return Base64.getEncoder().encodeToString(saltBytes);
     }
 
     /**
@@ -97,8 +97,8 @@ public class CryptoMotor {
         //return new Base64().encodeAsString(encryptedTextBytes);
         //String asB64 = Base64.getEncoder().encodeToString("some string".getBytes("utf-8"));
         //System.out.println(asB64); // Output will be: c29tZSBzdHJpbmc=
-        String B64 = Base64.getEncoder().encodeToString(encryptedTextBytes);
-        return B64;
+        //String B64 = Base64.getEncoder().encodeToString(encryptedTextBytes);
+        return new String(Base91.encode(encryptedTextBytes));
     }
 
     //expects input in base64
@@ -110,7 +110,9 @@ public class CryptoMotor {
         //byte[] encryptedTextBytes = new Base64.decode(encryptedText);
         //byte[] asBytes = Base64.getDecoder().decode("c29tZSBzdHJpbmc=");
         //System.out.println(new String(asBytes, "utf-8")); // And the output is: some string
-        byte[] encryptedTextBytes = Base64.getDecoder().decode(encryptedText);
+        //Arrays.toString(Base91.encode(encryptedTextBytes));
+        byte[] encryptedTextBytes = Base91.decode(encryptedText.getBytes());
+        //byte[] encryptedTextBytes = Base64.getDecoder().decode(encryptedText);
         //byte[] encryptedTextBytes = encryptedText;
 
         // Derive the key
@@ -181,7 +183,8 @@ public class CryptoMotor {
     }
     
     public  String getIvBytesAsB64() {
-        return Base64.getEncoder().encodeToString(ivBytes);
+        return new String(Base91.encode(ivBytes));
+        //return Base64.getEncoder().encodeToString(ivBytes);
     }
 
     /**

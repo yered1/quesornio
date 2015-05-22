@@ -22,13 +22,14 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
+//import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
+//import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Base64;
+import java.util.Arrays;
+//import java.util.Base64;
 import java.util.LinkedList;
 
 /**
@@ -444,9 +445,12 @@ public class LogEntry {
                 //FileOutputStream fo = new FileOutputStream(f);
                 BufferedWriter bw = new BufferedWriter(new FileWriter(f,false));
                 byte[] salt = PasswordEncryption.generateSalt();
-                String encryptedPass = Base64.getEncoder().encodeToString(
-                        PasswordEncryption.getEncryptedPassword(token, salt));
-                String b64Salt = Base64.getEncoder().encodeToString(salt);
+                //String encryptedPass = Base64.getEncoder().encodeToString(
+                //        PasswordEncryption.getEncryptedPassword(token, salt));
+                //String b64Salt = Base64.getEncoder().encodeToString(salt);
+                String encryptedPass = new String(Base91.encode(
+                        PasswordEncryption.getEncryptedPassword(token, salt)));
+                String b64Salt = new String(Base91.encode(salt));
                 bw.write(b64Salt + encryptedPass);
                 bw.newLine();
                 CryptoMotor crypto = new CryptoMotor(token);   
@@ -588,11 +592,11 @@ public class LogEntry {
             tmpLine = br.readLine();
             if (tmpLine ==null)
                 break;
-            String contentString = line.substring(36);
-            String saltString = line.substring(0, 12);
-            String ivString = line.substring(12, 36);
-            byte[] saltByte = Base64.getDecoder().decode(saltString);
-            byte[] ivByte = Base64.getDecoder().decode(ivString);
+            String contentString = line.substring(30);
+            String saltString = line.substring(0, 10);
+            String ivString = line.substring(10, 30);
+            byte[] saltByte = Base91.decode(saltString.getBytes());//Base64.getDecoder().decode(saltString);
+            byte[] ivByte = Base91.decode(ivString.getBytes());//Base64.getDecoder().decode(ivString);
             CryptoMotor crypto = new CryptoMotor(saltByte, token, ivByte);
             currLog = new LogEntry(crypto.decrypt(contentString));
             if (!currLog.isHashOK()) {
@@ -663,11 +667,11 @@ public class LogEntry {
             }
             //if (line ==null)
             //    break;
-            String contentString = line.substring(36);
-            String saltString = line.substring(0, 12);
-            String ivString = line.substring(12, 36);
-            byte[] saltByte = Base64.getDecoder().decode(saltString);
-            byte[] ivByte = Base64.getDecoder().decode(ivString);
+            String contentString = line.substring(30);
+            String saltString = line.substring(0, 10);
+            String ivString = line.substring(10, 30);
+            byte[] saltByte = Base91.decode(saltString.getBytes());//Base64.getDecoder().decode(saltString);
+            byte[] ivByte = Base91.decode(ivString.getBytes());//Base64.getDecoder().decode(ivString);
             CryptoMotor crypto = new CryptoMotor(saltByte, token, ivByte);
             currLog = new LogEntry(crypto.decrypt(contentString));
             if (!currLog.isHashOK()) {
@@ -739,10 +743,10 @@ public class LogEntry {
             System.out.print("invalid\n");
             System.exit(255);
         }
-        String passString = line.substring(24);
-        String saltString = line.substring(0, 24);
-        byte[] passByte = Base64.getDecoder().decode(passString);
-        byte[] saltByte = Base64.getDecoder().decode(saltString);
+        String passString = line.substring(20);
+        String saltString = line.substring(0, 20);
+        byte[] passByte = Base91.decode(passString.getBytes());//Base64.getDecoder().decode(passString);
+        byte[] saltByte = Base91.decode(saltString.getBytes());//Base64.getDecoder().decode(saltString);
         br.close();
         return PasswordEncryption.authenticate(token, passByte, saltByte);
         //return false;
@@ -806,11 +810,11 @@ public class LogEntry {
             line = br.readLine();//start at second line
             if (line ==null)
                 break;
-            String contentString = line.substring(36);
-            String saltString = line.substring(0, 12);
-            String ivString = line.substring(12, 36);
-            byte[] saltByte = Base64.getDecoder().decode(saltString);
-            byte[] ivByte = Base64.getDecoder().decode(ivString);
+            String contentString = line.substring(30);
+            String saltString = line.substring(0, 10);
+            String ivString = line.substring(10, 30);
+            byte[] saltByte = Base91.decode(saltString.getBytes());//Base64.getDecoder().decode(saltString);
+            byte[] ivByte = Base91.decode(ivString.getBytes());//Base64.getDecoder().decode(ivString);
             CryptoMotor crypto = new CryptoMotor(saltByte, token, ivByte);
             currLog = new LogEntry(crypto.decrypt(contentString));
             if (!currLog.isHashOK()) {
@@ -883,11 +887,11 @@ public class LogEntry {
                 tmpLine = br.readLine();
                 if (tmpLine == null)
                     break;
-                String contentString = line.substring(36);
-                String saltString = line.substring(0, 12);
-                String ivString = line.substring(12,36);
-                byte[] saltByte = Base64.getDecoder().decode(saltString);
-                byte[] ivByte = Base64.getDecoder().decode(ivString);
+                String contentString = line.substring(30);
+                String saltString = line.substring(0, 10);
+                String ivString = line.substring(10,30);
+                byte[] saltByte = Base91.decode(saltString.getBytes());//Base64.getDecoder().decode(saltString);
+                byte[] ivByte = Base91.decode(ivString.getBytes());//Base64.getDecoder().decode(ivString);
                 CryptoMotor crypto = new CryptoMotor(saltByte,token,ivByte);
                 
                 LogEntry currLog = new LogEntry(crypto.decrypt(contentString));
@@ -906,11 +910,11 @@ public class LogEntry {
                 tmpLine = br.readLine();
                 if (tmpLine == null)
                     break;
-                String contentString = line.substring(36);
-                String saltString = line.substring(0, 12);
-                String ivString = line.substring(12,36);
-                byte[] saltByte = Base64.getDecoder().decode(saltString);
-                byte[] ivByte = Base64.getDecoder().decode(ivString);
+                String contentString = line.substring(30);
+                String saltString = line.substring(0, 10);
+                String ivString = line.substring(10,30);
+                byte[] saltByte = Base91.decode(saltString.getBytes());//Base64.getDecoder().decode(saltString);
+                byte[] ivByte = Base91.decode(ivString.getBytes());//Base64.getDecoder().decode(ivString);
                 CryptoMotor crypto = new CryptoMotor(saltByte, token,ivByte);
                 LogEntry currLog = new LogEntry(crypto.decrypt(contentString));
                 if (!currLog.isHashOK()) {
