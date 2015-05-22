@@ -28,9 +28,10 @@ import java.io.UnsupportedEncodingException;
 //import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
+import java.util.ArrayList;
+//import java.util.Arrays;
 //import java.util.Base64;
-import java.util.LinkedList;
+//import java.util.LinkedList;
 
 /**
  *
@@ -334,7 +335,7 @@ public class LogEntry {
             System.out.print("invalid\n");
                 System.exit(255);
         }
-        LinkedList<String> f = null;
+        ArrayList<String> f = null;
         try{
             f = Logappend.fileSim.get(logPath);
         }catch (Exception x){
@@ -352,7 +353,7 @@ public class LogEntry {
                 //String b64Salt = Base64.getEncoder().encodeToString(salt);
                 //bw.write(b64Salt + encryptedPass);
                 //bw.newLine();
-                LinkedList<String> tmp = new LinkedList<>();
+                ArrayList<String> tmp = new ArrayList<>();
                 tmp.add(token);
                 tmp.add(prepareLine());
                 Logappend.fileSim.put(logPath, tmp);
@@ -381,7 +382,7 @@ public class LogEntry {
             }
             //the first time is entering
             if (roomID == -1 && isAprovided){
-               LinkedList<LogEntry> logList = getLogListB();
+               ArrayList<LogEntry> logList = getLogListB();
                 boolean existsInLog = existsInLog(logList);
                 long lastEntryTime = getLastEntryTime(logList);
                 if ((!existsInLog && lastEntryTime < this.getTimestamp())|| 
@@ -394,7 +395,7 @@ public class LogEntry {
                 //entering to a room after being in lobby
             } else if (roomID >= 0 && isAprovided){
                 //must exist previosly in lobby to enter the room && last roomID can't be -2
-                LinkedList<LogEntry> logList = getLogListB();
+                ArrayList<LogEntry> logList = getLogListB();
                 
                 long currentRoom = getCurrentRoom(logList);
                 
@@ -416,7 +417,7 @@ public class LogEntry {
                 }
                 //leaving a room or gallery
             }else if (isLprovided){
-                LinkedList<LogEntry> logList = getLogListB();
+                ArrayList<LogEntry> logList = getLogListB();
                 long currRoom = getCurrentRoom(logList);
                 
                 if ( currRoom == getRoomID() && getLastEntryTime(logList) < this.timestamp){//at this point getRoomID should only be >= -1
@@ -531,7 +532,7 @@ public class LogEntry {
         }
 
     }
-    private long getCurrentRoom(LinkedList<LogEntry> logList) throws Exception{
+    private long getCurrentRoom(ArrayList<LogEntry> logList) throws Exception{
         /*BufferedReader br = new BufferedReader(new FileReader(logPath));
         
         String line =  br.readLine();//first line is crypto
@@ -617,7 +618,7 @@ public class LogEntry {
         raf.close();
         return lastValidEntry.getRoomID();
     }
-    private long getLastEntryTime(LinkedList<LogEntry> logList) throws Exception {
+    private long getLastEntryTime(ArrayList<LogEntry> logList) throws Exception {
         //BufferedReader br = new BufferedReader(new FileReader(logPath));
         
         //String line =  br.readLine();//first line is crypto
@@ -725,7 +726,7 @@ public class LogEntry {
         br.close();
         return PasswordEncryption.authenticate(token, passByte, saltByte);*/
         //return false;
-        LinkedList<String> f = null;
+        ArrayList<String> f = null;
         try{
             f = Logappend.fileSim.get(logPath);
         }catch (Exception x){
@@ -751,9 +752,9 @@ public class LogEntry {
         return PasswordEncryption.authenticate(token, passByte, saltByte);
         //return false;
     }
-    private LinkedList<LogEntry> getLogListB() throws Exception{
+    private ArrayList<LogEntry> getLogListB() throws Exception{
         //BufferedReader br = new BufferedReader(new FileReader(logPath));
-        LinkedList<String> br = null;
+        ArrayList<String> br = null;
         try{
             br = Logappend.fileSim.get(logPath);
         }catch (Exception x){
@@ -763,7 +764,7 @@ public class LogEntry {
         //String lastLine;
         LogEntry currLog = null;
         //LogEntry lastValidEntry = null;
-        LinkedList<LogEntry> logList = new LinkedList<>();
+        ArrayList<LogEntry> logList = new ArrayList<>();
        if (br == null){
            return logList;
        }
@@ -795,14 +796,14 @@ public class LogEntry {
         */
         return logList;
     }
-    private LinkedList<LogEntry> getLogList() throws Exception{
+    private ArrayList<LogEntry> getLogList() throws Exception{
         BufferedReader br = new BufferedReader(new FileReader(logPath));
         
         String line =  br.readLine();//first line is crypto
         //String lastLine;
         LogEntry currLog = null;
         //LogEntry lastValidEntry = null;
-        LinkedList<LogEntry> logList = new LinkedList<>();
+        ArrayList<LogEntry> logList = new ArrayList<>();
        
 
         while (line != null) {
@@ -828,7 +829,7 @@ public class LogEntry {
         
         return logList;
     }
-    private boolean existsInLog(LinkedList<LogEntry> logList) throws FileNotFoundException, IOException, Exception {
+    private boolean existsInLog(ArrayList<LogEntry> logList) throws FileNotFoundException, IOException, Exception {
         //BufferedReader br = new BufferedReader(new FileReader(logPath));
         //br.readLine();
         if (getGuestName() != null) {

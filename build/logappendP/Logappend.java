@@ -8,16 +8,12 @@ package logappendP;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Base64;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -28,7 +24,7 @@ public class Logappend {
     private static String[] lineArgs;
     private boolean isBatch = false;
     //public static LinkedList<LogEntry> fileSim = new LinkedList<>();
-    public static HashMap<String,LinkedList<String>> fileSim = new HashMap();
+    public static HashMap<String,ArrayList<String>> fileSim = new HashMap();
     
     /**
      * @param args the command line arguments
@@ -160,9 +156,9 @@ public class Logappend {
                     
                 }
                 br.close();
-                for (Map.Entry<String, LinkedList<String>> e : Logappend.fileSim.entrySet()) {
+                for (Map.Entry<String, ArrayList<String>> e : Logappend.fileSim.entrySet()) {
                     BufferedWriter bw = new BufferedWriter(new FileWriter(new File(e.getKey()), true));
-                    LinkedList<String> lines = e.getValue();
+                    ArrayList<String> lines = e.getValue();
                     
                     byte[] salt = PasswordEncryption.generateSalt();
                     String encryptedPass = new String (Base91.encode(

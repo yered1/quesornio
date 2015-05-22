@@ -5,7 +5,7 @@
  */
 package logreadP;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 
 
@@ -44,8 +44,8 @@ public class Logread {
         boolean gotI = false;
         
         LogEntryR entry = new LogEntryR();
-        LinkedList<LogEntryR.Person> employees = new LinkedList<>();
-        LinkedList<LogEntryR.Person> guests = new LinkedList<>();
+        ArrayList<LogEntryR.Person> employees = new ArrayList<>();
+        ArrayList<LogEntryR.Person> guests = new ArrayList<>();
         try {
             while (i < args.length) {
                 if (args[i].startsWith("-")) {

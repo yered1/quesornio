@@ -29,7 +29,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 //import java.util.Base64;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 /**
  *
@@ -327,7 +327,7 @@ public class LogEntryR {
         }
     }
 
-    public void printI(LinkedList<Person> employees, LinkedList<Person> guests) throws Exception {
+    public void printI(ArrayList<Person> employees, ArrayList<Person> guests) throws Exception {
         File f = new File(this.logPath);
         if (!f.exists() || f.isDirectory()) {
             System.out.print("invalid\n");
@@ -338,8 +338,8 @@ public class LogEntryR {
                 System.exit(255);
             }
         }
-        LinkedList<LogEntryR> logList = getLogList();
-        LinkedList<Person> persons = new LinkedList<>();
+        ArrayList<LogEntryR> logList = getLogList();
+        ArrayList<Person> persons = new ArrayList<>();
         for (int i = 0; i < logList.size(); i++) {
             if (logList.get(i).getRoomID() >= 0) {
                 if (logList.get(i).getEmployeeName() != null) {
@@ -370,23 +370,23 @@ public class LogEntryR {
                 
             }
         }
-        LinkedList<Person> mergedPersons = new LinkedList<>();
+        ArrayList<Person> mergedPersons = new ArrayList<>();
         mergedPersons.addAll(employees);
         mergedPersons.addAll(guests);
-        LinkedList<LinkedList> commonRooms = new LinkedList<>();
+        ArrayList<ArrayList> commonRooms = new ArrayList<>();
         for (int i = 1; i< mergedPersons.size(); i++){
-            LinkedList<Room> currRoom = mergedPersons.get(i).getRooms();
-            LinkedList<Long> tmp = commonRooms(mergedPersons.get(0).getRooms(), currRoom);
+            ArrayList<Room> currRoom = mergedPersons.get(i).getRooms();
+            ArrayList<Long> tmp = commonRooms(mergedPersons.get(0).getRooms(), currRoom);
             if (tmp.size() <=0){
                 System.exit(0);
             }
             commonRooms.add(tmp);
             
         }
-        LinkedList<Long> tmp = commonRooms.get(0);
-        LinkedList<String> result = new LinkedList<>();
+        ArrayList<Long> tmp = commonRooms.get(0);
+        ArrayList<String> result = new ArrayList<>();
         for (int i = 1; i < commonRooms.size(); i++){
-            LinkedList<Long> tmp2 = commonRooms.get(i);
+            ArrayList<Long> tmp2 = commonRooms.get(i);
             boolean atLeastOneSameRoom = false;
             for (int e = 0; e < tmp.size(); e ++){
                 for (int x =0; x < tmp2.size(); x++){
@@ -413,8 +413,8 @@ public class LogEntryR {
         
     }
     
-    private LinkedList<Long> commonRooms(LinkedList<Room> a, LinkedList<Room> b){
-        LinkedList<Long> result = new LinkedList<>();
+    private ArrayList<Long> commonRooms(ArrayList<Room> a, ArrayList<Room> b){
+        ArrayList<Long> result = new ArrayList<>();
         for (int i = 0; i < a.size(); i++){
             Room aRoom = a.get(i);
             for (int e = 0; e < b.size(); e++){
@@ -432,7 +432,7 @@ public class LogEntryR {
     }
     
     //-1 = not found
-    private long getEntryTime(LinkedList<LogEntryR> logList, String name, long roomID, boolean isGuest, boolean isEmpl){
+    private long getEntryTime(ArrayList<LogEntryR> logList, String name, long roomID, boolean isGuest, boolean isEmpl){
         for (int i = 0; i < logList.size(); i++){
             if (isGuest && logList.get(i).getGuestName() != null && 
                     logList.get(i).getGuestName().equals(name) &&
@@ -449,7 +449,7 @@ public class LogEntryR {
         return -1;
     }
     
-    private long getExitTime(LinkedList<LogEntryR> logList, String name, long roomID, boolean isGuest, boolean isEmpl){
+    private long getExitTime(ArrayList<LogEntryR> logList, String name, long roomID, boolean isGuest, boolean isEmpl){
         boolean entryTimeFound = false;
         for (int i = 0; i < logList.size(); i++) {
             if (isGuest && logList.get(i).getGuestName() != null
@@ -492,7 +492,7 @@ public class LogEntryR {
             }
         }
 
-        LinkedList<LogEntryR> logList = getLogList();
+        ArrayList<LogEntryR> logList = getLogList();
         boolean gotEnterTime = false;
         //boolean hasExitedGallery = false;
         long enterTime = -1;
@@ -556,7 +556,7 @@ public class LogEntryR {
             }
         }
         
-        LinkedList<LogEntryR> logList = getLogList();
+        ArrayList<LogEntryR> logList = getLogList();
         String roomList = "";
         boolean added = false;
         for (int i = 0; i < logList.size(); i++)
@@ -584,14 +584,14 @@ public class LogEntryR {
         System.out.print(roomList);
     }
     
-    private LinkedList<LogEntryR> getLogList() throws Exception{
+    private ArrayList<LogEntryR> getLogList() throws Exception{
         BufferedReader br = new BufferedReader(new FileReader(logPath));
         
         String line =  br.readLine();//first line is crypto
         //String lastLine;
         LogEntryR currLog = null;
         //LogEntry lastValidEntry = null;
-        LinkedList<LogEntryR> logList = new LinkedList<>();
+        ArrayList<LogEntryR> logList = new ArrayList<>();
        
 
         while (line != null) {
@@ -629,14 +629,14 @@ public class LogEntryR {
                 System.exit(255);
             }
         }
-        LinkedList<LogEntryR> logList = getLogList();
+        ArrayList<LogEntryR> logList = getLogList();
        
 
         
         
-        LinkedList<String> employeeList = new LinkedList<>();
-        LinkedList<String> guestList = new LinkedList<>();
-        LinkedList<Room> rooms = new LinkedList<>();
+        ArrayList<String> employeeList = new ArrayList<>();
+        ArrayList<String> guestList = new ArrayList<>();
+        ArrayList<Room> rooms = new ArrayList<>();
         
         for (int i = 0; i < logList.size(); i++) {
             if ((logList.get(i).getEmployeeName() != null
@@ -700,11 +700,11 @@ public class LogEntryR {
         
         System.out.print(employeeNames);
         System.out.print(guestNames);
-        LinkedList<String> roomLineList = new LinkedList<>();
-        //LinkedList<Room> orderedRooms = new LinkedList<>();
+        ArrayList<String> roomLineList = new ArrayList<>();
+        //ArrayList<Room> orderedRooms = new ArrayList<>();
         Collections.sort(rooms);
         for (int i =0; i <rooms.size(); i++){
-            LinkedList<String> tmpNames = rooms.get(i).getNames();
+            ArrayList<String> tmpNames = rooms.get(i).getNames();
             String roomLine = "" + rooms.get(i).getRoomID() + ":";
             Collections.sort(tmpNames);
             for (int e = 0; e< tmpNames.size(); e++){
@@ -727,7 +727,7 @@ public class LogEntryR {
 
     }
     //retuns the last roomID, -2 if it's outside gallery, -1 if in lobby
-    public long isIn(String name, boolean isEmployee, boolean isGuest, LinkedList<LogEntryR> logList) {
+    public long isIn(String name, boolean isEmployee, boolean isGuest, ArrayList<LogEntryR> logList) {
         if (name == null){
             return -2;
         }
@@ -1052,7 +1052,7 @@ public class LogEntryR {
     
     class Person{
         private String name;
-        private LinkedList<Room> rooms = new LinkedList<>();
+        private ArrayList<Room> rooms = new ArrayList<>();
 
         public void addRoom(Room r){
             rooms.add(r);
@@ -1081,21 +1081,21 @@ public class LogEntryR {
         /**
          * @return the rooms
          */
-        public LinkedList<Room> getRooms() {
+        public ArrayList<Room> getRooms() {
             return rooms;
         }
 
         /**
          * @param rooms the rooms to set
          */
-        public void setRooms(LinkedList<Room> rooms) {
+        public void setRooms(ArrayList<Room> rooms) {
             this.rooms = rooms;
         }
     }
     
     class Room implements Comparable<Room>{
         private long roomID;
-        private LinkedList<String> names = new LinkedList<>();
+        private ArrayList<String> names = new ArrayList<>();
         private long enterTime = -1;
         private long exitTime = -1;
 
@@ -1116,14 +1116,14 @@ public class LogEntryR {
         /**
          * @return the names
          */
-        public LinkedList<String> getNames() {
+        public ArrayList<String> getNames() {
             return names;
         }
 
         /**
          * @param names the names to set
          */
-        public void setNames(LinkedList<String> names) {
+        public void setNames(ArrayList<String> names) {
             this.names = names;
         }
         
